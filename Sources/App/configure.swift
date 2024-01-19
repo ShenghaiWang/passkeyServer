@@ -1,10 +1,13 @@
 import Vapor
+import NIOSSL
 
-// configures your application
 public func configure(_ app: Application) async throws {
-    // uncomment to serve files from /Public folder
-    // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
-    // register routes
+    app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    app.http.server.configuration.hostname = "passkey.timwang.au"
+    app.http.server.configuration.port = 443
+    app.http.server.configuration.tlsConfiguration = .makeServerConfiguration(
+        certificateChain: try NIOSSLCertificate.fromPEMFile("./cert.pem").map { .certificate($0) },
+        privateKey: .file("./privatekey.pem")
+    )
     try routes(app)
 }
